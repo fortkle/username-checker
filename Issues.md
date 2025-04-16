@@ -5,7 +5,7 @@
 
 - [x] **Issue 1:** [Setup] モノレポ基本設定: pnpm workspace, Turborepo, 共通設定 (`configs/*`), ルートBiomeを設定する。 (`Plan.md` Phase 1, Step 1)
 - [x] **Issue 2:** [Setup] `server-app` 初期設定: `@quick-start.mdc` 準拠でパッケージを作成し、基本的なヘルスチェックAPI (/health\_check) を実装する。 (`Plan.md` Phase 1, Step 2)
-- [ ] **Issue 3:** [Setup] `web-app` 初期設定: `@quick-start.mdc` 準拠でパッケージを作成し、React, TailwindCSS, TanStack Query, React Hook Form, Zod 等の基本設定を行い、"Hello World" を表示する。 (`Plan.md` Phase 1, Step 3)
+- [x] **Issue 3:** [Setup] `web-app` 初期設定: `@quick-start.mdc` 準拠でパッケージを作成し、React, TailwindCSS, TanStack Query, React Hook Form, Zod 等の基本設定を行い、"Hello World" を表示する。 (`Plan.md` Phase 1, Step 3)
 - [ ] **Issue 4:** [Setup] 初期リンター/フォーマッター適用: `pnpm lint`, `pnpm format` を実行し、初期コードに問題がないことを確認する。 (`Plan.md` Phase 1, Step 4)
 - [ ] **Issue 5:** [PR] Epic 1 PR作成: 開発基盤構築完了のプルリクエストを作成する。 (`Plan.md` Phase 1, Step 5)
 
