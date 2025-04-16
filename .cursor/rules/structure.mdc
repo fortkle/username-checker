@@ -1,0 +1,106 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# プロジェクト構造
+
+このプロジェクトはmonorepo（モノレポジトリ）アーキテクチャを採用しています。複数のアプリケーションやパッケージを単一のリポジトリで管理することで、コード共有と開発効率を高めています。
+
+## ディレクトリ構造
+
+```
+my-project/
+├── packages/
+│   ├── server-app/              # バックエンドサーバー
+│   │   ├── src/
+│   │   │   ├── handlers/        # APIハンドラー
+│   │   │   ├── middlewares/     # Honoミドルウェア
+│   │   │   ├── domainLogics/    # ビジネスロジック
+│   │   │   ├── resourceSchema/  # リソーススキーマ定義
+│   │   │   ├── constants/       # 定数
+│   │   │   ├── @types/          # 型定義
+│   │   │   └── utils/           # ユーティリティ
+│   │   └── testutil/            # テストユーティリティ
+│   │
+│   ├── web-app/                 # ユーザー向けフロントエンド
+│   │   ├── src/
+│   │   │   ├── components/      # UIコンポーネント 
+│   │   │   ├── hooks/           # カスタムフック
+│   │   │   ├── pages/           # ページコンポーネント
+│   │   │   ├── contexts/        # Reactコンテキスト
+│   │   │   ├── libs/            # ライブラリ
+│   │   │   ├── assets/          # 静的アセット
+│   │   │   └── utils/           # ユーティリティ
+│   │   └── public/              # 公開ファイル
+│   │
+│   ├── web-admin/               # 管理画面
+│   │   └── ...                  # web-app と同様の構造
+│   │
+│   └── utils/                   # 共通ユーティリティと型定義
+│       ├── src/
+│       │   ├── types.ts         # 共通型定義
+│       │   ├── index.ts         # エクスポート
+│       │   └── testing/         # テスト用ユーティリティ
+│       └── vitest.config.js     # テスト設定
+│
+├── docker/                      # Docker関連ファイル
+├── .github/                     # GitHub Actions ワークフロー
+├── pnpm-workspace.yaml          # pnpm ワークスペース設定
+├── turbo.json                   # Turborepo 設定
+└── package.json                 # ルートパッケージ設定
+```
+
+## pnpm Workspace と Turborepo の構成
+
+### pnpm Workspace
+
+pnpm workspaceはパッケージ間の依存関係を効率的に管理します。`pnpm-workspace.yaml`ファイルでワークスペースのパッケージを定義します：
+
+```yaml
+packages:
+  - 'packages/*'
+```
+
+各パッケージは相互に依存関係を持つことができ、以下のように参照します：
+
+```json
+"dependencies": {
+  "@my-project/utils": "workspace:*"
+}
+```
+
+### Turborepo
+
+Turborepoはビルド処理を最適化するためのタスクランナーです。`turbo.json`で各パッケージのタスクとその依存関係を定義します：
+
+```json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env.*local"],
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "lint": {
+      "outputs": []
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "inputs": ["src/**/*.tsx", "src/**/*.ts", "test/**/*.ts", "test/**/*.tsx"]
+    }
+  }
+}
+```
+
+このセットアップにより、以下の利点があります：
+
+1. **コード共有**: 共通のコンポーネント、型、ユーティリティを複数のアプリケーションで再利用
+2. **一貫性**: コーディング規約、設定、テスト戦略を統一
+3. **効率性**: 変更されたパッケージのみをビルド・テストすることで開発・CI時間を短縮
+4. **依存関係管理**: パッケージ間の明確な依存関係定義と自動的なバージョン整合性

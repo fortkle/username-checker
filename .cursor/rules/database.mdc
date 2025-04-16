@@ -1,0 +1,76 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# データベース設計ルール
+
+## 命名規則
+
+### テーブル
+- スネークケース（`snake_case`）を使用
+- 基本的なエンティティは単数形で命名（例: `account`, `device`）
+- 関連テーブルはエンティティ間の関係を明示（例: `account_device_link`, `account_follow`）
+- 履歴テーブルには `_history` サフィックスを付加（例: `account_follow_history`）
+
+### カラム
+- スネークケース（`snake_case`）を使用
+- 主キーは基本的に `id`
+- 共通の基本カラム:
+  - `id`: 内部識別子（基本的に自動増分の `bigint`）
+  - `slug`: 外部公開用の一意識別子（`text` 型）
+  - `created_at`: レコード作成日時
+  - `updated_at`: レコード更新日時
+- 外部キーは `{テーブル名}_{カラム名}` の形式で命名（例: `account_id`, `device_id`）
+- ステータスや種別を表す列には明示的な名前を使用（例: `registration_source`, `end_reason`）
+- 日時列には `_at` サフィックスを使用（例: `created_at`, `start_at`, `end_at`）
+- 真偽値列には `is_`, `has_`, `can_` などのプレフィックスを使用（例: `is_onboarding_frame`, `has_back`, `can_change_color`）
+
+## データ型
+
+### 基本データ型
+- ID: `bigint` (GENERATED ALWAYS AS IDENTITY) - 主キーと外部キーに使用
+- 短いID: `integer` (GENERATED ALWAYS AS IDENTITY) - 一部のシステムテーブルで使用
+- 文字列: `text` - 可変長文字列（SQLのVARCHARでなく）
+- 日時: `timestamp with time zone` - タイムゾーン付きタイムスタンプ
+- JSON: `json` - JSONデータ
+- 真偽値: `boolean`
+
+## 制約
+
+### キー制約
+- 主キー: すべてのテーブルに `id` を主キーとして定義
+- 一意制約:
+  - `slug` カラムには必ず一意制約を設定
+  - ユニークな組み合わせには複合一意制約を設定（例: `account_id`, `device_id`）
+- 外部キー制約:
+  - 関連テーブル間の整合性を保証するために必ず設定
+  - デフォルトの参照動作は `ON UPDATE NO ACTION ON DELETE NO ACTION`
+
+### チェック制約
+- 意味的な制約はチェック制約で表現（例: セルフフォロー防止 `CHECK (to_account_id <> from_account_id)`）
+
+## インデックス
+
+### インデックス命名規則
+- `{テーブル名}_{カラム名}_idx` の形式で命名
+- 複合インデックスの場合は `{テーブル名}_{カラム1}_{カラム2}_idx` のように連結
+- 一意インデックスの場合は `_key` サフィックスの代わりにユニーク制約を使用
+
+### インデックス戦略
+- 外部キーには基本的にインデックスを作成
+- 検索条件として頻繁に使用されるカラムにはインデックスを設定
+- 複合条件での検索に対して複合インデックスを作成
+- 条件付きインデックスを活用（例: `WHERE (username IS NOT NULL)` または `WHERE (end_at IS NULL)`）
+
+## 履歴管理パターン
+
+1. アクティブレコードパターン:
+   - 現在アクティブなレコードを保持するテーブル（例: `account_follow`）
+   - 履歴全体を保持する履歴テーブル（例: `account_follow_history`）
+   - アクティブレコードは対応する履歴レコードへの参照を持つ
+
+2. 期間管理パターン:
+   - `start_at`: 開始日時
+   - `end_at`: 終了日時（NULLはアクティブ状態を示す）
+   - `end_reason`: 終了理由（数値コード、NULLはアクティブ状態を示す）

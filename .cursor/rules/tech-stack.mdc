@@ -1,0 +1,36 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 技術スタック
+
+## プロジェクト構成
+- **言語**: TypeScript
+- **ランタイム**: Node.js (v20+)
+- **モノレポ管理**: pnpm workspace, Turborepo
+
+## バックエンド (API)
+- **フレームワーク**: Hono
+- **データベース**: PostgreSQL
+- **クエリビルダー**: Kysely
+- **スキーマ検証**: Zod, OpenAPI
+- **ロギング**: Pino
+- **認証**: カスタム実装 (JWTベース) / Firebase Auth (マネージドサービス)
+
+## フロントエンド
+- **フレームワーク**: React (v18+)
+- **ビルドツール**: Vite
+- **スタイリング**: TailwindCSS
+- **状態管理**: TanStack Query (React Query)
+- **コンポーネントライブラリ**: Radix UI
+- **フォーム管理**: React Hook Form, Zod
+
+## インフラストラクチャ
+- **コンテナ化**: Docker
+- **デプロイ**: Google Cloud Run (API), Firebase Hosting (Web)
+
+## 開発ツール
+- **コード品質**: Biome (リント/フォーマット)
+- **テスト**: Vitest
+- **CI/CD**: GitHub Actions 

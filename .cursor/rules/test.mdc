@@ -1,0 +1,144 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# テスト戦略
+
+このプロジェクトではVitestを使用したテスト戦略を採用しています。テストは各パッケージ内で対象のコードと同じディレクトリに配置し、`.test.ts`または`.test.tsx`の拡張子を持つファイルとして実装されています。
+
+## テストの構造
+
+テストファイルは対象となるファイルと同じディレクトリに配置され、以下の命名規則に従います：
+
+```
+対象ファイル: example.ts
+テストファイル: example.test.ts
+```
+
+## テスト設定
+
+各パッケージには`vitest.config.js`（または`vitest.config.ts`）ファイルがあり、テスト実行の設定が定義されています。共通の設定は`packages/vitest-config/base.js`に定義され、各パッケージはこの共通設定を継承しています。
+
+```js
+// packages/server-app/vitest.config.js の例
+import baseConfig from "@my-project/vitest-config/base.js";
+import { defineConfig, mergeConfig } from "vitest/config";
+
+export default mergeConfig(
+  baseConfig,
+  defineConfig({
+    test: {
+      exclude: [],
+    },
+  }),
+);
+```
+
+ビルド時にはテストファイルが除外されるように、各パッケージの`tsconfig.build.json`に以下の設定があります：
+
+```json
+{
+  "exclude": ["**/*.test.ts"]
+}
+```
+
+## テスト実行
+
+テストは以下のコマンドで実行できます：
+
+```bash
+# すべてのテストを実行
+pnpm test
+
+# 変更を監視して自動的にテストを実行
+pnpm test:watch
+
+# 特定のパッケージのテストを実行
+pnpm --filter @my-project/server-app test
+```
+
+## テストの種類
+
+### ユニットテスト
+
+個々の関数やコンポーネントの動作を検証するテストです。モックを使用して外部依存関係を分離します。
+
+### 統合テスト
+
+複数のコンポーネントやモジュールの連携を検証するテストです。例えば、APIハンドラーとデータベースの連携などを検証します。
+
+## モッキング (Mocking)
+
+ユニットテストでは、テスト対象のコードが依存する外部モジュール（データベースアクセス、APIクライアント、ユーティリティ関数など）をモック（偽物）に置き換えることが一般的です。これにより、テスト対象のロジックのみに集中し、外部要因によるテストの失敗を防ぎ、テストの実行速度を向上させることができます。
+
+このプロジェクトでは、Vitestに組み込まれたモック機能を利用します。
+
+- **`vi.fn()`**: 関数やメソッドの単純なモックを作成します。呼び出し回数や引数を追跡できます。
+- **`vi.spyOn()`**: 既存のオブジェクトのメソッドを監視（スパイ）し、元の実装を維持しつつ呼び出しを追跡したり、一時的に実装を置き換えたりします。
+- **`vi.mock()`**: モジュール全体をモックします。特定の関数だけをモックしたり、モジュール全体をカスタム実装に置き換えたりすることが可能です。
+
+```typescript
+// モジュールのモック例 (some-utils.ts をモック)
+import { vi } from 'vitest';
+
+vi.mock('./some-utils', () => ({
+  someFunction: vi.fn(() => 'mocked value'),
+  anotherFunction: vi.fn(),
+}));
+
+// 関数のモック例
+it('should call the mocked function', () => {
+  const mockFn = vi.fn();
+  mockFn('hello');
+  expect(mockFn).toHaveBeenCalledWith('hello');
+});
+```
+
+モックを適切に使用することで、テストの独立性と信頼性を高めることができます。
+
+## データベースのテスト
+
+データベースにアクセスするコード（主に統合テスト）では、モックを使用する代わりに、実際のデータベース（PostgreSQL）を使ったテストが行われます。これにより、クエリやトランザクションが正しく動作することを確認できます。
+
+テストの独立性を保つために、`packages/server-app/src/testutil/db.ts` にある `prepareDB` ユーティリティを使用します。このユーティリティは以下の処理を自動で行います：
+
+1.  **一時データベース作成**: テストスイート実行前に、テスト用のテンプレートデータベースから一時的なデータベースを作成します (`beforeAll`)。
+2.  **テーブルクリア**: 各テストケース実行前に、すべてのテーブルデータをクリアします (`beforeEach`)。
+3.  **データベース削除**: テストスイート完了後に、作成した一時データベースを削除します (`afterAll`)。
+
+テストコードでは、`prepareDB` から返される `Kysely` インスタンスや `pg.Pool` を使用してデータベース操作を行います。
+
+```typescript
+import { prepareDB, shouldRunTestsUsingPostgres } from "@/testutil/db";
+import { describe, it, expect } from "vitest";
+
+describe.runIf(shouldRunTestsUsingPostgres())("Database dependent test", () => {
+  // 各テストスイートの最初に prepareDB を呼び出す
+  const { kysely: db, pgPool } = prepareDB();
+
+  it("should insert and select data", async () => {
+    // db インスタンスを使ってデータベース操作
+    await db.insertInto('users').values({ id: '1', name: 'Test User' }).execute();
+    const user = await db.selectFrom('users').selectAll().where('id', '=', '1').executeTakeFirst();
+
+    expect(user?.name).toBe('Test User');
+  });
+
+  // 各 it の前には beforeEach でテーブルがクリアされる
+  it("should be empty initially in another test", async () => {
+    const user = await db.selectFrom('users').selectAll().where('id', '=', '1').executeTakeFirst();
+    expect(user).toBeUndefined();
+  });
+});
+```
+
+このアプローチにより、実際のデータベース環境に近い状態でテストを実行しつつ、テスト間の影響を排除できます。なお、このテストを実行するには、環境変数などで適切なPostgreSQL接続情報が設定されている必要があります (`shouldRunTestsUsingPostgres()` でチェックされます)。
+
+## ベストプラクティス
+
+1. **テストの分離**: テストは互いに干渉しないように分離されるべきです
+2. **テスト環境の準備**: 必要に応じて`beforeEach`や`afterEach`でテスト環境をセットアップ・クリーンアップします
+3. **モックの活用**: 外部依存関係はモックして、テストを高速かつ信頼性のあるものにします
+4. **適切なアサーション**: テストの目的を明確にするために、具体的で適切なアサーションを使用します
+5. **テストカバレッジ**: 重要なコードパスが十分にテストされていることを確認します

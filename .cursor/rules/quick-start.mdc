@@ -1,0 +1,534 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# クイックスタートガイド
+
+このガイドは、新しいプロジェクトリポジトリをセットアップし、基本的なバックエンドAPI (`server-app`) とフロントエンドアプリケーション (`web-app`) を持つモノレポ開発環境を迅速に構築するための手順を示します。
+
+**ゴール:**
+
+*   `/health_check` エンドポイントを持つ API サーバーが起動する。
+*   "Hello World" を表示する Web アプリケーションが起動する。
+*   pnpm, Turborepo, TypeScript, Biome, Vitest を使用した開発基盤が整う。
+
+**【重要】注意点:**
+
+このガイドに記載されている具体的なコード例、設定ファイルの内容、ライブラリのバージョンは、あくまで**作成時点での参考情報**です。
+実際にプロジェクトをセットアップする際は、**利用するライブラリの最新バージョンや公式ドキュメントを確認し、プロジェクトの要件に合わせて適切な設定やコードに修正・調整してください。**
+特に、設定ファイル（`tsconfig.json`, `vite.config.ts`, `biome.json` など）の内容は、最新のベストプラクティスや非推奨の変更などを反映する必要があります。
+
+## 1. 前提条件
+
+以下のツールがインストールされていることを確認してください。
+
+*   [Node.js](mdc:https:/nodejs.org) (v20 以降推奨)
+*   [pnpm](mdc:https:/pnpm.io/installation) (v8 以降推奨)
+*   [Git](mdc:https:/git-scm.com)
+
+## 2. リポジトリの初期化
+
+```bash
+# 新しいディレクトリを作成し移動
+mkdir my-new-project
+cd my-new-project
+
+# Gitリポジトリを初期化
+git init
+
+# ルートの package.json を作成
+pnpm init
+# private: true を追記し、不要なフィールドを削除してください。
+# 例:
+# {
+#   "name": "my-new-project",
+#   "version": "1.0.0",
+#   "private": true,
+#   "packageManager": "pnpm@9.x.x" # pnpmのバージョンに合わせてください
+# }
+```
+
+## 3. pnpm Workspace と Turborepo のセットアップ
+
+モノレポ管理ツールを設定します。
+
+```bash
+# pnpm-workspace.yaml を作成
+cat << 'EOF' > pnpm-workspace.yaml
+packages:
+  - 'packages/*'
+  - 'configs/*' # 設定パッケージ用
+EOF
+
+# Turborepo を開発依存としてインストール
+pnpm add -D -w turbo@^2 # ルートにインストール (-w オプション)
+
+# turbo.json を作成 (基本的なパイプライン設定)
+cat << 'EOF' > turbo.json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "lint": {
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "inputs": ["src/**/*.ts", "src/**/*.tsx", "test/**/*.ts", "test/**/*.tsx"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}
+EOF
+
+# ルートの package.json にスクリプトを追加してください。
+# 例:
+# "scripts": {
+#   "build": "turbo run build",
+#   "dev": "turbo run dev --parallel",
+#   "lint": "turbo run lint",
+#   "test": "turbo run test",
+#   "format": "biome format --write .",
+#   "check": "biome check --apply ."
+# }
+```
+
+## 4. 共通設定パッケージの作成 (`configs/*`)
+
+TypeScript や Vitest の共通設定を管理するパッケージを作成します。
+
+```bash
+# 設定用ディレクトリ作成
+mkdir configs
+
+# TypeScript設定パッケージ
+mkdir configs/typescript-config
+cd configs/typescript-config
+pnpm init
+# package.json を編集: name=@my-project/typescript-config, private: true などを設定してください。
+# tsconfig.base.json (共通のTSConfig設定) を作成
+cat << 'EOF' > tsconfig.base.json
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "outDir": "dist",
+    "declaration": true,
+    "sourceMap": true
+  },
+  "exclude": ["node_modules", "dist"]
+}
+EOF
+cd ../.. # ルートに戻る
+
+# Vitest設定パッケージ
+mkdir configs/vitest-config
+cd configs/vitest-config
+pnpm init
+pnpm add -D vitest vite-tsconfig-paths # Vitestとプラグインを追加
+# package.json を編集: name=@my-project/vitest-config, private: true などを設定してください。
+# vitest.config.base.js を作成
+cat << 'EOF' > vitest.config.base.js
+import { defineConfig } from "vitest/config";
+import tsconfigPaths from "vite-tsconfig-paths";
+
+export default defineConfig({
+  test: {
+    globals: true, // describe, itなどをグローバルに利用可能にする
+    environment: "node", // デフォルトのテスト環境
+    pool: "forks", // GitHub Actionsでの問題を避けるため
+    exclude: ["**/node_modules/**", "**/dist/**"],
+  },
+  plugins: [tsconfigPaths()],
+});
+EOF
+cd ../.. # ルートに戻る
+```
+*各 `package.json` の `name` フィールドなどを適切に編集してください。`tsconfig.base.json` の内容はプロジェクトに合わせて調整してください。*
+
+## 5. `utils` パッケージの作成
+
+共通のユーティリティ関数などを配置するパッケージです。（今回は空でOK）
+
+```bash
+mkdir packages
+mkdir packages/utils
+cd packages/utils
+pnpm init
+pnpm add -D typescript @my-project/typescript-config
+# package.json を編集: name=@my-project/utils, private: true などを設定してください。
+# tsconfig.json を作成
+cat << 'EOF' > tsconfig.json
+{
+  "extends": "@my-project/typescript-config/tsconfig.base.json",
+  "include": ["src"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
+}
+EOF
+mkdir src
+# src/index.ts を作成
+cat << 'EOF' > src/index.ts
+export const sampleUtil = () => 'Hello from utils';
+EOF
+cd ../.. # ルートに戻る
+```
+*`package.json` の `name` フィールドなどを適切に編集してください。*
+
+## 6. `server-app` パッケージの作成
+
+バックエンドAPIサーバーのパッケージです。
+
+```bash
+mkdir packages/server-app
+cd packages/server-app
+pnpm init
+pnpm add hono # APIフレームワーク
+pnpm add -D typescript @types/node @my-project/typescript-config @my-project/vitest-config vitest vite @hono/vite-dev-server # 開発依存
+# package.json を編集: name=@my-project/server-app, private: true, scripts を追加してください。
+# 例:
+# "scripts": {
+#   "dev": "vite --port 8787", # HonoはViteの開発サーバーを利用可能
+#   "build": "vite build",
+#   "test": "vitest run",
+#   "test:watch": "vitest",
+#   "lint": "biome lint .",
+#   "type:check": "tsc --noEmit"
+# }
+
+# tsconfig.json 作成
+cat << 'EOF' > tsconfig.json
+{
+  "extends": "@my-project/typescript-config/tsconfig.base.json",
+  "include": ["src", "test"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "types": ["node", "vitest/globals"]
+  }
+}
+EOF
+
+# tsconfig.build.json 作成 (ビルド用、テストを除外)
+cat << 'EOF' > tsconfig.build.json
+{
+  "extends": "./tsconfig.json",
+  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+}
+EOF
+
+# vitest.config.js 作成
+cat << 'EOF' > vitest.config.js
+import { defineConfig, mergeConfig } from "vitest/config";
+import baseConfig from "@my-project/vitest-config/vitest.config.base.js";
+
+export default mergeConfig(baseConfig, defineConfig({
+  // server-app 固有の設定があれば追記
+}));
+EOF
+
+# vite.config.ts 作成
+cat << 'EOF' > vite.config.ts
+import devServer from "@hono/vite-dev-server";
+import { defineConfig } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
+
+export default defineConfig({
+  plugins: [
+    tsconfigPaths(),
+    devServer({
+      entry: "src/index.ts",
+    }),
+  ],
+});
+EOF
+
+# src ディレクトリとヘルスチェックハンドラー作成
+mkdir src
+mkdir src/handlers
+
+# src/index.ts 作成
+cat << 'EOF' > src/index.ts
+import { Hono } from 'hono';
+import { healthCheckHandler } from '@/handlers/healthCheck';
+
+const app = new Hono()
+
+app.route('/health_check', healthCheckHandler);
+
+export default app;
+EOF
+
+# src/handlers/healthCheck.ts 作成
+cat << 'EOF' > src/handlers/healthCheck.ts
+import { Hono } from 'hono';
+
+export const healthCheckHandler = new Hono();
+
+healthCheckHandler.get('/', (c) => {
+  return c.json({ ok: true, message: 'Server is healthy!' });
+});
+EOF
+
+# 簡単なテストを作成
+mkdir test
+# test/healthCheck.test.ts 作成
+cat << 'EOF' > test/healthCheck.test.ts
+import app from '@/index';
+
+describe('GET /health_check', () => {
+  it('should return 200 OK', async () => {
+    const res = await app.request('/health_check');
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+  });
+});
+EOF
+
+cd ../.. # ルートに戻る
+```
+*`package.json` の `name` フィールドや `scripts` を適切に編集してください。*
+
+## 7. `web-app` パッケージの作成
+
+フロントエンドアプリケーションのパッケージです。
+
+```bash
+mkdir packages/web-app
+cd packages/web-app
+pnpm init
+pnpm add react react-dom # React
+pnpm add -D typescript @types/react @types/react-dom vite @vitejs/plugin-react @my-project/typescript-config @my-project/vitest-config vitest @testing-library/react # 開発依存
+# package.json を編集: name=@my-project/web-app, private: true, scripts を追加してください。
+# 例:
+# "scripts": {
+#   "dev": "vite",
+#   "build": "tsc && vite build",
+#   "preview": "vite preview",
+#   "test": "vitest run",
+#   "test:watch": "vitest",
+#   "lint": "biome lint .",
+#   "type:check": "tsc --noEmit"
+# }
+
+# tsconfig.json 作成
+cat << 'EOF' > tsconfig.json
+{
+  "extends": "@my-project/typescript-config/tsconfig.base.json",
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "jsx": "react-jsx",
+    "types": ["node", "vitest/globals"]
+  }
+}
+EOF
+
+# tsconfig.node.json 作成 (Vite設定ファイルの型チェック用)
+cat << 'EOF' > tsconfig.node.json
+{
+  "extends": "@my-project/typescript-config/tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "types": ["node"]
+  },
+  "include": ["vite.config.ts"]
+}
+EOF
+
+# vitest.config.js 作成
+cat << 'EOF' > vitest.config.js
+import { defineConfig, mergeConfig } from "vitest/config";
+import baseConfig from "@my-project/vitest-config/vitest.config.base.js";
+
+export default mergeConfig(baseConfig, defineConfig({
+  test: {
+    environment: "jsdom", // Reactテスト用にjsdom環境を使用
+    setupFiles: "./test/setup.ts", // セットアップファイル (必要なら)
+  }
+}));
+EOF
+
+# vite.config.ts 作成
+cat << 'EOF' > vite.config.ts
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
+
+export default defineConfig({
+  plugins: [react(), tsconfigPaths()],
+  server: {
+    port: 3000, // 開発サーバーのポート
+    proxy: { // APIサーバーへのプロキシ設定 (必要なら)
+      "/api": {
+        target: "http://localhost:8787", // server-app のポート
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
+    },
+  },
+});
+EOF
+
+# HTMLとReactコンポーネント作成
+# index.html 作成
+cat << 'EOF' > index.html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Web App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+EOF
+
+mkdir src
+# src/App.tsx 作成
+cat << 'EOF' > src/App.tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+
+function App() {
+  return <h1>Hello World!</h1>;
+}
+
+export default App;
+EOF
+
+# src/main.tsx 作成
+cat << 'EOF' > src/main.tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+);
+EOF
+
+# テストセットアップファイル (空でもOK)
+mkdir test
+touch test/setup.ts
+
+cd ../.. # ルートに戻る
+```
+*`package.json` の `name`, `scripts`, `vite.config.ts` のプロキシ設定などを適切に編集してください。*
+
+## 8. Biome (リンター/フォーマッター) のセットアップ
+
+プロジェクト全体でコードスタイルを統一します。
+
+```bash
+# Biome を開発依存としてルートにインストール
+pnpm add -D -w @biomejs/biome
+
+# biome.json を作成 (基本的な設定)
+cat << 'EOF' > biome.json
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "organizeImports": {
+    "enabled": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true
+      // プロジェクト固有のルールがあれば追加
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "tab", // または "space"
+    "indentWidth": 2
+  },
+  "javascript": {
+    "formatter": {
+       "quoteStyle": "single",
+       "trailingComma": "all"
+     }
+  }
+}
+EOF
+
+# .gitignore に biome.json を追加 (必要な場合)
+echo 'biome.json' >> .gitignore
+```
+*`biome.json` の設定はプロジェクトの好みに合わせて調整してください。ルートの `package.json` に `format` と `check` スクリプトが設定されていることを確認してください。*
+
+## 9. 依存関係の最終インストール
+
+すべてのパッケージの依存関係を解決します。
+
+```bash
+pnpm install
+```
+
+## 10. 開発サーバーの起動
+
+`server-app` と `web-app` を同時に起動します。
+
+```bash
+pnpm dev
+```
+
+*   APIサーバーは `http://localhost:8787` で起動します。
+*   Webアプリは `http://localhost:3000` で起動します。
+
+ブラウザで `http://localhost:8787/health_check` と `http://localhost:3000` にアクセスして、それぞれ動作を確認してください。
+
+## 11. テストの実行
+
+プロジェクト全体のテストを実行します。
+
+```bash
+pnpm test
+```
+
+`server-app` のヘルスチェックAPIのテストが成功することを確認してください。
+
+## 12. 次のステップ
+
+これで基本的なモノレポ開発環境のセットアップは完了です。
+
+*   データベース接続 (`server-app` に Kysely, pg を追加、Docker Compose 設定)
+*   認証機能
+*   状態管理ライブラリ (`web-app` に TanStack Query など)
+*   UIコンポーネントライブラリ (`web-app` に Radix UI など)
+
+などを必要に応じて追加してください。他のドキュメント (`development.md`, `test.md`, `coding-standards.md`, `structure.md`, `tech-stack.md`) も参考に開発を進めてください。 
