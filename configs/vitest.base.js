@@ -6,9 +6,9 @@ export default {
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      reportsDirectory: './coverage'
+      reportsDirectory: './coverage',
     },
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
-    exclude: ['node_modules/**', 'dist/**']
-  }
-}; 
+    exclude: ['node_modules/**', 'dist/**'],
+  },
+};

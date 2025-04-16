@@ -19,12 +19,12 @@ export const healthCheckRouter = new Hono();
 // ヘルスチェックエンドポイント
 healthCheckRouter.get('/', (c: Context) => {
   logger.info('Health check requested');
-  
+
   const response: HealthCheckResponse = {
     status: 'ok',
     timestamp: new Date().toISOString(),
     version: process.env.npm_package_version || '0.0.0',
   };
-  
+
   return c.json(response);
-}); 
+});
