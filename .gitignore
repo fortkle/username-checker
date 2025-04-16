@@ -1,0 +1,36 @@
+# 依存関係
+node_modules
+.pnpm-store
+
+# ビルド出力
+dist
+build
+.next
+out
+coverage
+
+# ログ
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 環境変数
+.env
+.env.*
+!.env.example
+
+# エディタ
+.idea
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# turbo
+.turbo 
