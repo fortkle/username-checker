@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 import App from './App';
 
 describe('App', () => {
@@ -12,4 +12,4 @@ describe('App', () => {
     render(<App />);
     expect(screen.getByText(/カウント: 0/)).toBeInTheDocument();
   });
-}); 
+});

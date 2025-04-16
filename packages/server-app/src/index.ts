@@ -1,7 +1,7 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
-import { logger } from './utils/logger.js';
 import { healthCheckRouter } from './routers/health-check.js';
+import { logger } from './utils/logger.js';
 
 // アプリケーションの作成
 const app = new Hono();
@@ -16,9 +16,12 @@ type ServerInfo = {
   port: number;
 };
 
-serve({
-  fetch: app.fetch,
-  port: PORT,
-}, (info: ServerInfo) => {
-  logger.info(`Server is running on port ${info.port}`);
-}); 
+serve(
+  {
+    fetch: app.fetch,
+    port: PORT,
+  },
+  (info: ServerInfo) => {
+    logger.info(`Server is running on port ${info.port}`);
+  }
+);
