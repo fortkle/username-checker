@@ -2,16 +2,6 @@ import { CheckResponse, PlatformResult, PlatformStatus } from '../types';
 import { platforms } from './platformsData';
 
 /**
- * ランダムなプラットフォームステータスを生成する
- * モック用にランダムな結果を返す
- */
-const _getRandomStatus = (): PlatformStatus => {
-  const statuses: PlatformStatus[] = ['available', 'unavailable', 'error'];
-  const randomIndex = Math.floor(Math.random() * statuses.length);
-  return statuses[randomIndex];
-};
-
-/**
  * 指定されたユーザー名に基づいた決定論的な結果を生成する
  * 同じユーザー名に対しては常に同じ結果を返す
  */
@@ -20,7 +10,7 @@ const getDeterministicStatus = (platformId: string, username: string): PlatformS
   let hash = 0;
   const str = platformId + username;
   for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash = (hash << 5) - hash + str.charCodeAt(i);
     hash = hash & hash; // 32bitに変換
   }
 
@@ -43,11 +33,11 @@ export async function checkUsername(username: string): Promise<CheckResponse> {
       const results: PlatformResult[] = platforms.map((platform) => {
         const status = getDeterministicStatus(platform.id, username);
         let message;
-        
+
         if (status === 'error') {
           message = 'サーバーエラーが発生しました';
         }
-        
+
         return {
           platform,
           status,
@@ -62,4 +52,4 @@ export async function checkUsername(username: string): Promise<CheckResponse> {
       });
     }, 1500); // 1.5秒の遅延
   });
-} 
+}

@@ -58,4 +58,4 @@ export const platforms: Platform[] = [
     url: 'https://medium.com',
     icon: 'medium',
   },
-]; 
+];

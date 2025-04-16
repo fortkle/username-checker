@@ -53,21 +53,17 @@ export function UsernameForm({ onSubmit, isLoading = false }: UsernameFormProps)
             autoComplete="off"
           />
         </div>
-        {errors.username && (
-          <p className="mt-1 text-sm text-red-600">{errors.username.message}</p>
-        )}
+        {errors.username && <p className="mt-1 text-sm text-red-600">{errors.username.message}</p>}
       </div>
       <button
         type="submit"
         disabled={isLoading}
         className={`w-full px-4 py-2 text-white font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-          isLoading
-            ? 'bg-blue-400 cursor-not-allowed'
-            : 'bg-blue-600 hover:bg-blue-700'
+          isLoading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
         }`}
       >
         {isLoading ? '確認中...' : '利用可能か確認する'}
       </button>
     </form>
   );
-} 
+}

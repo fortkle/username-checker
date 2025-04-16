@@ -29,4 +29,4 @@ export interface CheckResponse {
   username: string;
   results: PlatformResult[];
   timestamp: number;
-} 
+}

@@ -62,4 +62,4 @@ describe('PlatformCard', () => {
     expect(screen.getByText('確認中...')).toBeInTheDocument();
     expect(screen.queryByText('プラットフォームを開く')).not.toBeInTheDocument();
   });
-}); 
+});
