@@ -45,17 +45,22 @@ export const checkDns = async (platform: Platform, username: string): Promise<Ch
     // ドメインが存在する場合
     logger.debug({ platform: platform.id, domain, exists: true }, 'ドメインが存在します');
 
-    // 設定に基づいて利用可否を判定（通常は存在すれば利用不可）
+    // 設定に基づいて利用可否を判定
+    // unavailableIfExists が true の場合、ドメインが存在すれば利用不可（available=false）
+    // unavailableIfExists が false の場合、ドメインが存在すれば利用可能（available=true）
     return {
-      available: !unavailableIfExists,
+      available: unavailableIfExists === false,
     };
   } catch (error) {
-    // ドメインが存在しない場合（ENOTFOUND）は通常利用可能
+    // ドメインが存在しない場合（ENOTFOUND）
     if (error instanceof Error && 'code' in error && error.code === 'ENOTFOUND') {
       logger.debug({ platform: platform.id, domain, exists: false }, 'ドメインが存在しません');
-      // 設定に基づいて利用可否を判定（通常は存在しなければ利用可能）
+      
+      // 設定に基づいて利用可否を判定
+      // unavailableIfExists が true の場合、ドメインが存在しなければ利用可能（available=true）
+      // unavailableIfExists が false の場合、ドメインが存在しなければ利用不可（available=false）
       return {
-        available: unavailableIfExists,
+        available: unavailableIfExists === true,
       };
     }
 
