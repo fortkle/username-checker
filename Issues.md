@@ -8,18 +8,18 @@
 - [x] **Issue 3:** [Setup] `web-app` 初期設定: `@quick-start.mdc` 準拠でパッケージを作成し、React, TailwindCSS, TanStack Query, React Hook Form, Zod 等の基本設定を行い、"Hello World" を表示する。 (`Plan.md` Phase 1, Step 3)
 - [x] **Issue 4:** [Setup] 初期リンター/フォーマッター適用: `pnpm lint`, `pnpm format` を実行し、初期コードに問題がないことを確認する。 (`Plan.md` Phase 1, Step 4)
 
-## Epic 2: UIプロトタイプ作成
+## Epic 2: UIプロトタイプ作成 (完了)
 *ユーザーストーリー: ユーザーは、Web画面でユーザー名を入力し、モックデータに基づいたチェック結果グリッド表示を確認できる。*
 
-- [ ] **Issue 6:** [FE Mock] ユーザー名入力フォーム作成: `web-app` に、ユーザーがチェックしたいユーザー名を入力するためのフォームコンポーネントを `React Hook Form` と `Zod` を用いて作成する。 (`Plan.md` Phase 2, Step 6-1)
-- [ ] **Issue 7:** [FE Mock] 結果表示グリッド作成: `web-app` に、プラットフォームのチェック結果をグリッド形式で表示するためのコンポーネントを `TailwindCSS` を用いて作成する。 (`Plan.md` Phase 2, Step 6-2)
-- [ ] **Issue 8:** [FE Mock] プラットフォームカード作成: グリッド内に表示される、各プラットフォームのアイコン、名前、ステータス（利用可否など）を表示するカードコンポーネントを作成する。 (`Plan.md` Phase 2, Step 6-3)
-- [ ] **Issue 9:** [FE Mock] モックデータ/関数定義: APIレスポンスを模倣したモックデータ（プラットフォームリストと各ステータス）と、それを非同期に返すモックAPI関数を定義する。 (`Plan.md` Phase 2, Step 7)
-- [ ] **Issue 10:** [FE Mock] TanStack Query 設定: `web-app` に `TanStack Query` をセットアップし、グローバルなクエリクライアントを設定する。 (`Plan.md` Phase 2, Step 8)
-- [ ] **Issue 11:** [FE Mock] モックAPI連携実装: フォーム送信時に `TanStack Query` を使用して Issue 9 で作成したモックAPI関数を呼び出し、状態管理を行うカスタムフックを作成する。 (`Plan.md` Phase 2, Step 9)
-- [ ] **Issue 12:** [FE Mock] 表示ロジック実装: Issue 11 のカスタムフックから得られる状態（ローディング、成功、エラー、データ）に応じて、Issue 7, 8 で作成したグリッドとカードの表示を動的に更新する。 (`Plan.md` Phase 2, Step 10)
-- [ ] **Issue 13:** [FE Mock] UIテスト実装: Issue 6, 7, 8, 11 で作成したコンポーネントやフックに対するユニットテスト・結合テストを `Vitest` と `@testing-library/react` で記述する。 (`Plan.md` Phase 2, Step 11)
-- [ ] **Issue 14:** [FE Mock] リンター/フォーマッター適用: `pnpm lint --filter web-app`, `pnpm format --filter web-app` を実行する。 (`Plan.md` Phase 2, Step 12)
+- [x] **Issue 6:** [FE Mock] ユーザー名入力フォーム作成: `web-app` に、ユーザーがチェックしたいユーザー名を入力するためのフォームコンポーネントを `React Hook Form` と `Zod` を用いて作成する。 (`Plan.md` Phase 2, Step 6-1)
+- [x] **Issue 7:** [FE Mock] 結果表示グリッド作成: `web-app` に、プラットフォームのチェック結果をグリッド形式で表示するためのコンポーネントを `TailwindCSS` を用いて作成する。 (`Plan.md` Phase 2, Step 6-2)
+- [x] **Issue 8:** [FE Mock] プラットフォームカード作成: グリッド内に表示される、各プラットフォームのアイコン、名前、ステータス（利用可否など）を表示するカードコンポーネントを作成する。 (`Plan.md` Phase 2, Step 6-3)
+- [x] **Issue 9:** [FE Mock] モックデータ/関数定義: APIレスポンスを模倣したモックデータ（プラットフォームリストと各ステータス）と、それを非同期に返すモックAPI関数を定義する。 (`Plan.md` Phase 2, Step 7)
+- [x] **Issue 10:** [FE Mock] TanStack Query 設定: `web-app` に `TanStack Query` をセットアップし、グローバルなクエリクライアントを設定する。 (`Plan.md` Phase 2, Step 8)
+- [x] **Issue 11:** [FE Mock] モックAPI連携実装: フォーム送信時に `TanStack Query` を使用して Issue 9 で作成したモックAPI関数を呼び出し、状態管理を行うカスタムフックを作成する。 (`Plan.md` Phase 2, Step 9)
+- [x] **Issue 12:** [FE Mock] 表示ロジック実装: Issue 11 のカスタムフックから得られる状態（ローディング、成功、エラー、データ）に応じて、Issue 7, 8 で作成したグリッドとカードの表示を動的に更新する。 (`Plan.md` Phase 2, Step 10)
+- [x] **Issue 13:** [FE Mock] UIテスト実装: Issue 6, 7, 8, 11 で作成したコンポーネントやフックに対するユニットテスト・結合テストを `Vitest` と `@testing-library/react` で記述する。 (`Plan.md` Phase 2, Step 11)
+- [x] **Issue 14:** [FE Mock] リンター/フォーマッター適用: `pnpm lint --filter web-app`, `pnpm format --filter web-app` を実行する。 (`Plan.md` Phase 2, Step 12)
 
 ## Epic 3: コア機能実装 (バックエンド API)
 *ユーザーストーリー: 開発者は、指定されたユーザー名の利用可否を複数のプラットフォームでチェックするバックエンドAPIを実装できる。*
