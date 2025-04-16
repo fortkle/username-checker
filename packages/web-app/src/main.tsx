@@ -1,20 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { QueryClientProvider } from '@tanstack/react-query';
 import App from './App.tsx';
 import './index.css';
-
-// React Queryの設定
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-
-// QueryClientの作成
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: false,
-    },
-  },
-});
+import { queryClient } from './lib/queryClient.ts';
 
 const rootElement = document.getElementById('root');
 

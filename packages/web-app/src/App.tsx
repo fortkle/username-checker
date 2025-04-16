@@ -1,29 +1,40 @@
-import { useState } from 'react';
+import { UsernameForm } from './components/UsernameForm';
+import { ResultsGrid } from './components/ResultsGrid';
+import { useUsernameCheck } from './hooks/useUsernameCheck';
 
 function App() {
-  const [count, setCount] = useState(0);
+  const {
+    results,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    checkUserAvailability,
+  } = useUsernameCheck();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-100">
-      <header className="text-center mb-10">
+    <div className="min-h-screen flex flex-col items-center justify-start p-4 bg-gray-50">
+      <header className="text-center mb-8 mt-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">Username Checker</h1>
         <p className="text-gray-600">複数のプラットフォームでユーザー名の利用可否を確認</p>
       </header>
 
-      <main className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
-        <div className="flex flex-col items-center">
-          <button
-            type="button"
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-            onClick={() => setCount((count) => count + 1)}
-          >
-            カウント: {count}
-          </button>
-          <p className="mt-4 text-gray-700">
-            このボタンをクリックして React が正常に動作していることを確認
-          </p>
-        </div>
+      <main className="w-full max-w-4xl bg-white rounded-lg shadow-md p-6">
+        <UsernameForm
+          onSubmit={checkUserAvailability}
+          isLoading={isFetching}
+        />
+        
+        <ResultsGrid
+          results={results}
+          isLoading={isLoading}
+          error={isError ? error : null}
+        />
       </main>
+      
+      <footer className="mt-8 text-center text-sm text-gray-500">
+        <p>© 2023 Username Checker | 利用可能なプラットフォームを確認</p>
+      </footer>
     </div>
   );
 }
