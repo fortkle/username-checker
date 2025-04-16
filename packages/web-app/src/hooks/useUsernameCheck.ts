@@ -24,16 +24,12 @@ export function useUsernameCheck() {
     isFetching,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     refetch: _refetch,
-  } = useQuery<CheckResponse, Error>(
-    ['usernameCheck', username],
-    () => checkUsername(username),
-    {
-      // ユーザー名が空の場合はクエリを実行しない
-      enabled: !!username,
-      // 表示が唐突に変わるのを防ぐため、古いデータを表示し続ける
-      keepPreviousData: true,
-    }
-  );
+  } = useQuery<CheckResponse, Error>(['usernameCheck', username], () => checkUsername(username), {
+    // ユーザー名が空の場合はクエリを実行しない
+    enabled: !!username,
+    // 表示が唐突に変わるのを防ぐため、古いデータを表示し続ける
+    keepPreviousData: true,
+  });
 
   // ユーザー名チェックを実行する関数
   const checkUserAvailability = (newUsername: string) => {
@@ -52,4 +48,4 @@ export function useUsernameCheck() {
     error,
     checkUserAvailability,
   };
-} 
+}

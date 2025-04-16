@@ -18,26 +18,28 @@ vi.mock('./hooks/useUsernameCheck', () => ({
 describe('App', () => {
   it('renders header correctly', () => {
     const queryClient = new QueryClient();
-    
+
     render(
       <QueryClientProvider client={queryClient}>
         <App />
       </QueryClientProvider>
     );
-    
+
     expect(screen.getByRole('heading', { name: /Username Checker/i })).toBeInTheDocument();
-    expect(screen.getByText(/複数のプラットフォームでユーザー名の利用可否を確認/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/複数のプラットフォームでユーザー名の利用可否を確認/i)
+    ).toBeInTheDocument();
   });
 
   it('renders form', () => {
     const queryClient = new QueryClient();
-    
+
     render(
       <QueryClientProvider client={queryClient}>
         <App />
       </QueryClientProvider>
     );
-    
+
     expect(screen.getByLabelText(/ユーザー名/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /利用可能か確認する/i })).toBeInTheDocument();
   });

@@ -25,7 +25,7 @@ describe('UsernameForm', () => {
 
     const input = screen.getByLabelText(/ユーザー名/i);
     fireEvent.change(input, { target: { value: 'testuser' } });
-    
+
     // フォームを送信（ボタンをクリック）
     const button = screen.getByRole('button', { name: /利用可能か確認する/i });
     fireEvent.click(button);
@@ -42,7 +42,7 @@ describe('UsernameForm', () => {
     // 空の入力でフォーム送信
     const button = screen.getByRole('button', { name: /利用可能か確認する/i });
     fireEvent.click(button);
-    
+
     await waitFor(() => {
       expect(screen.queryByText(/ユーザー名を入力してください/i)).toBeInTheDocument();
     });
@@ -54,8 +54,10 @@ describe('UsernameForm', () => {
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(screen.queryByText(/英数字、アンダースコア、ドット、ハイフンのみ使用可能です/i)).toBeInTheDocument();
+      expect(
+        screen.queryByText(/英数字、アンダースコア、ドット、ハイフンのみ使用可能です/i)
+      ).toBeInTheDocument();
     });
     expect(mockSubmit).not.toHaveBeenCalled();
   });
-}); 
+});

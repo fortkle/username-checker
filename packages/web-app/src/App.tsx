@@ -3,14 +3,8 @@ import { ResultsGrid } from './components/ResultsGrid';
 import { useUsernameCheck } from './hooks/useUsernameCheck';
 
 function App() {
-  const {
-    results,
-    isLoading,
-    isFetching,
-    isError,
-    error,
-    checkUserAvailability,
-  } = useUsernameCheck();
+  const { results, isLoading, isFetching, isError, error, checkUserAvailability } =
+    useUsernameCheck();
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-start p-4 bg-gray-50">
@@ -20,18 +14,11 @@ function App() {
       </header>
 
       <main className="w-full max-w-4xl bg-white rounded-lg shadow-md p-6">
-        <UsernameForm
-          onSubmit={checkUserAvailability}
-          isLoading={isFetching}
-        />
-        
-        <ResultsGrid
-          results={results}
-          isLoading={isLoading}
-          error={isError ? error : null}
-        />
+        <UsernameForm onSubmit={checkUserAvailability} isLoading={isFetching} />
+
+        <ResultsGrid results={results} isLoading={isLoading} error={isError ? error : null} />
       </main>
-      
+
       <footer className="mt-8 text-center text-sm text-gray-500">
         <p>© 2023 Username Checker | 利用可能なプラットフォームを確認</p>
       </footer>

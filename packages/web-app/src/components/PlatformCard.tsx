@@ -65,15 +65,13 @@ export function PlatformCard({ result }: PlatformCardProps) {
         </div>
         <h3 className="font-medium">{platform.name}</h3>
       </div>
-      
+
       <div className={`text-sm font-medium ${statusStyle.textColor} mt-auto`}>
         {statusStyle.text}
       </div>
-      
-      {message && status === 'error' && (
-        <p className="text-xs mt-1 text-gray-600">{message}</p>
-      )}
-      
+
+      {message && status === 'error' && <p className="text-xs mt-1 text-gray-600">{message}</p>}
+
       {status !== 'checking' && (
         <a
           href={platform.url}
@@ -86,4 +84,4 @@ export function PlatformCard({ result }: PlatformCardProps) {
       )}
     </div>
   );
-} 
+}

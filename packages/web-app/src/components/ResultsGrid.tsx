@@ -44,4 +44,4 @@ export function ResultsGrid({ results, isLoading, error }: ResultsGridProps) {
       </div>
     </div>
   );
-} 
+}
